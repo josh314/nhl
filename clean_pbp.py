@@ -28,12 +28,9 @@ def std_team_names(df):
         'S.J':'SJS',
         'T.B':'TBL'
     }
-    # The columns that are affected 
-    team_columns = ['ev.team', 'awayteam', 'hometeam']
     # Perform replacments
-    for column in team_columns:
-        for old,new in abbrev_map.items():
-            df.loc[ df[column]==old , column ] = new
+    for old,new in abbrev_map.items():
+        df.replace(old,new,inplace=True)
 
 def set_io_files():
     infile = sys.argv[1]
@@ -47,6 +44,9 @@ def main():
     raw = pd.read_csv(infile,header=0)
     # Drop unnamed redundant index column
     raw.drop(raw.columns[0], axis=1, inplace=True)
+    # Remove the 'no player' placeholders
+#raw.replace(
+    #Set the standard team abbreviations
     std_team_names(raw)
     raw.to_csv(outfile,index=False)
 
