@@ -5,7 +5,9 @@ Code for analyzing NHL data. Most of the data used can be obtained from [WAR-On-
 
 Links to the WAR-On-Ice (WOI) data can be found [here](http://war-on-ice.com/data/links.txt). As of this time, the data doesn't have the greatest documentation (it has been released publicly only recently). You can keep up with the state of the documentation and look at any old discussion of the data at [the blog](http://blog.war-on-ice.com/) over at WAR-On-Ice (you might start with [this post](http://blog.war-on-ice.com/sharing-is-caring/)). 
 
-The rawest form of the WOI data is the play-by-play data. This is scraped by WOI from the NHL's own post-game play-by-play breakdowns (here's [an example](http://www.nhl.com/scores/htmlreports/20112012/PL030146.HTM)). The results of the scraping are stored in the files with names like `nhlscrapr-20xx20yy.RData`. This serializes an R data frame with the full play-by-play data for the 20xx-20yy season. The same data frame is stored in CSV form as `playbyplay-20xx20yy.csv` in the archive `waronice-20xx20yy.zip`. Also in the archives are CSV files containing data derived/built from the play-by-play. 
+The rawest form of the WOI data is the play-by-play data. This is scraped by WOI from the NHL's own post-game play-by-play breakdowns (here's [an example](http://www.nhl.com/scores/htmlreports/20112012/PL030146.HTM)). The results of the scraping are stored in the files with names like `nhlscrapr-20xx20yy.RData`. This serializes an R data frame with the full play-by-play data table for the 20xx-20yy season. The same table is stored in CSV form as `playbyplay-20xx20yy.csv` in the archive `waronice-20xx20yy.zip`. This table is a little opaque on its own, but luckily WOI provides [a legend](https://docs.google.com/spreadsheets/d/152qlz8NFffmUvCQqPUtTuf52psCAsAGlypMqhpzR7PM/edit#gid=0).
+
+Also in the archives are CSV files containing data derived/built from the play-by-play. 
 
 Also among the WOI data files are some CSV files containing off-ice statistics (team colors and rosters) and a game-by-game summary (`games.csv`).
 
