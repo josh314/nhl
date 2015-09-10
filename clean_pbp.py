@@ -35,7 +35,7 @@ def std_team_names(df):
         for old,new in abbrev_map.items():
             df.loc[ df[column]==old , column ] = new
 
-def set_files():
+def set_io_files():
     infile = sys.argv[1]
     outfile = "out.csv"
     if len(sys.argv) > 2:
@@ -43,8 +43,7 @@ def set_files():
     return (infile,outfile)
 
 def main():
-    infile, outfile = set_files()
-    
+    infile, outfile = set_io_files()
     raw = pd.read_csv(infile,header=0)
     # Drop unnamed redundant index column
     raw.drop(raw.columns[0], axis=1, inplace=True)
