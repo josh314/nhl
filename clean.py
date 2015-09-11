@@ -5,7 +5,6 @@ Clean the raw seasonal play-by-play files (CSV) from WAR-On-Ice.
 
 2.) Drop the first column which is just the row number, so kinda redundant 
 
-3.) Change WAR-On-Ice's eccentric choice of abbreviations for some team names. I use the standard ones used by the NHL
 
 4.) Replaced the IMHO unnecessary 'xxxxxxxNA' placeholders used to indicate 'no player' with empty strings
 
@@ -22,7 +21,7 @@ import numpy as np
 
 def std_team_names(df):
     """
-    Changing WAR-On-Ice's eccentric choice of abbreviations for some team names. I change the abbreviations to the standard ones used by the NHL
+    Changes WAR-On-Ice's eccentric choice of abbreviations for some team names. I change the abbreviations to the standard ones used by the NHL
     """
     # Abbreviations replacment map
     abbrev_map = {
@@ -34,6 +33,9 @@ def std_team_names(df):
     # Perform replacments
     for old,new in abbrev_map.items():
         df.replace(old,new,inplace=True)
+
+def remove_noplayer_placeholders(df):
+    df.replace('xxxxxxxNA','',inplace=True)
 
 def set_io_files():
     infile = sys.argv[1]
@@ -48,7 +50,7 @@ def main():
     # Drop unnamed redundant index column
     raw.drop(raw.columns[0], axis=1, inplace=True)
     # Remove the 'no player' placeholders
-    raw.replace('xxxxxxxNA','',inplace=True)
+    remove_noplayer_placeholders(raw)
     #Set the standard team abbreviations
     std_team_names(raw)
     raw.to_csv(outfile,index=False)
