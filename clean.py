@@ -1,13 +1,5 @@
 """
-Clean the raw seasonal play-by-play files (CSV) from WAR-On-Ice. 
-
-1.) Just opening and then resaving in pandas will get rid of all of the double quotes cluttering up the file
-
-2.) Drop the first column which is just the row number, so kinda redundant 
-
-
-4.) Replaced the IMHO unnecessary 'xxxxxxxNA' placeholders used to indicate 'no player' with empty strings
-
+Module for cleaning the raw seasonal play-by-play data from WAR-On-Ice. If run as a script, ingests a cCSV and outputs a CSV.
 """
 import sys
 
@@ -20,9 +12,7 @@ import numpy as np
 
 
 def std_team_names(df):
-    """
-    Changes WAR-On-Ice's eccentric choice of abbreviations for some team names. I change the abbreviations to the standard ones used by the NHL
-    """
+    "Changes WAR-On-Ice's eccentric choice of abbreviations for some team names. I change the abbreviations to the standard ones used by the NHL"
     # Abbreviations replacment map
     abbrev_map = {
         'L.A':'LAK',
@@ -35,6 +25,7 @@ def std_team_names(df):
         df.replace(old,new,inplace=True)
 
 def remove_noplayer_placeholders(df):
+    "Replaces the 'xxxxxxxNA' placeholders with empty strings."
     df.replace('xxxxxxxNA','',inplace=True)
 
 def set_io_files():
