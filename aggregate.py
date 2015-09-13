@@ -16,20 +16,29 @@ def skaters_total_scoring(events):
 def _init_goalie_table(events):
     # dropna() removes nan from empty net situations
     def uniq_col(x): return set(events[x].dropna().unique()) 
-    goalies = sorted( list( uniq_col('away.G').union( uniq_col('home.G') ) ) )
+    goalies = sorted( list( uniq_col('away.G').union(uniq_col('home.G')) ) )
     return pd.DataFrame(index=goalies)
 
-def aggregate_goals_against(events):
+def goals_against(events):
     "Aggregate goals against for individual goalies over the input set of events. Returns a series indexed by goalie text_id."
     goals = events[events['etype']=='GOAL']
-    goals_against_goalie = pd.Series(data=goals['home.G'],index=goals.index)
-    goals_against_goalie[goals['ev.team']==goals['hometeam']] = goals['away.G']
-    return goals_against_goalie.dropna().value_counts().sort_index()
-    
-def goalies_all_stats(events):
-    "Individual goalie data aggregated over the input set of events"
+    goalies = pd.Series(data=goals['home.G'],index=goals.index)
+    goalies[goals['ev.team']==goals['hometeam']] = goals['away.G']
+    return goalies.dropna().value_counts().sort_index()
+
+def saves(events):
+    "Aggregate saves for individual goalies over the input set of events. Returns a series indexed by goalie text_id."
+    saved_shots = events[events['etype']=='SHOT']
+    goalie = pd.Series(data=saved_shots['home.G'],index=saved_shots.index)
+    goalie[saved_shots['ev.team']==saved_shots['hometeam']] = saved_shots['away.G']
+    return goalie.dropna().value_counts().sort_index()
+
+def goalies_aggregation_stats(events):
+    "Individual goalie data aggregated over the input events"
     goalies = _init_goalie_table(events)
-    goalies.insert(0,'GA',aggregate_goals_against(events))
+    goalies.insert(len(goalies.columns),'goals_against',goals_against(events))
+    goalies.insert(len(goalies.columns),'saves', saves(events))
+    goalies.fillna(0,inplace=True)
     return goalies
     
     
