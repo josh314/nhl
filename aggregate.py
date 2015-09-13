@@ -13,12 +13,28 @@ import numpy as np
 def skaters_total_scoring(events):
     pass
 
-def _init_goalie_table(events):
+def _goalie_index(events):
     # dropna() removes nan from empty net situations
     def uniq_col(x): return set(events[x].dropna().unique()) 
     goalies = sorted( list( uniq_col('away.G').union(uniq_col('home.G')) ) )
-    return pd.DataFrame(index=goalies)
+    return pd.Index(goalies)
 
+def goalies_games_played(events):
+    games = events['gcode'].unique()
+    for game in games:
+        pass
+
+def goalies_games_started(events,goalie_index=None):
+    "Aggregate goalie starts over input events. A list or index of goalies can be input if already calculated; otherwise computed on the fly from events. Returns data frame with columns: (starts,home_starts,away_starts)."
+    index = goalie_index if goalie_index else _goalie_index(events)
+    res = pd.DataFrame(index=index)
+    games = events.groupby('gcode').head(1)
+    res.insert(len(res.columns),'home_starts',games['home.G'].value_counts())
+    res.insert(len(res.columns),'away_starts',games['away.G'].value_counts())
+    res.fillna(0,inplace=True)
+    res.insert(0,'starts',res['home_starts']+res['away_starts'])
+    return res
+    
 def goals_against(events):
     "Aggregate goals against for individual goalies over the input set of events. Returns a series indexed by goalie text_id."
     goals = events[events['etype']=='GOAL']
@@ -35,7 +51,7 @@ def saves(events):
 
 def goalies_aggregation_stats(events):
     "Individual goalie data aggregated over the input events"
-    goalies = _init_goalie_table(events)
+    goalies = pd.DataFrame(index=_goalie_index(events))
     goalies.insert(len(goalies.columns),'goals_against',goals_against(events))
     goalies.insert(len(goalies.columns),'saves', saves(events))
     goalies.fillna(0,inplace=True)
