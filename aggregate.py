@@ -35,11 +35,16 @@ def game_winning_goals(events):
     
 def _find_gwg(game_goals):#Returns empty df if a tie
     def _max_score(team):#team = 'home' or 'away'
-        return game_goals[team+'.score'].max()
+        score = game_goals[team+'.score'].max()
+        if(game_goals.tail(1)['ev.team'].values[0]==game_goals[team+'team'].values[0]):
+            score += 1 #score entries don't include the goal just scored
+        return score
     winner, loser = 'home', 'away'
     if _max_score('away') > _max_score('home'):
         winner, loser = 'away', 'home'
-    gwg = game_goals[game_goals[winner+'.score'] > _max_score(loser)].head(1)
+    winner_goals = game_goals[game_goals['ev.team'] == game_goals[winner+'team']]
+    gwg = winner_goals[winner_goals[winner+'.score'] + 1 > _max_score(loser)].head(1)
+    #Need to strip off extra gcode layer of MultiIndex
     return gwg
 
 def goalies_games_started(events,goalie_index=None):
