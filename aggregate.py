@@ -22,14 +22,20 @@ def _goalie_index(events):
     goalies = sorted( list( uniq_col('away.G').union(uniq_col('home.G')) ) )
     return pd.Index(goalies)
 
+def remove_shootouts(events):
+    # Shootouts are period 5 of regular season games. 
+    events = events[(events['period']!=5)
+                    | (events['gcode']>_playoff_gcode_start)]
+    return events
+
 def goalies_games_played(events):#TODO
     games = events['gcode'].unique()
     for game in games:
         pass
-
+    
 def game_winning_goals(events):
-    "Returns the subset of the input events which represent game winning goals. Shootout goals should be filtered out of input."
-    goals = events[events['etype']=='GOAL']
+    "Returns subset of the input events which represent game winning goals."
+    goals = remove_shootouts(events[events['etype']=='GOAL'])
     games = goals.groupby('gcode')
     return games.apply(_find_gwg)
     
@@ -44,8 +50,11 @@ def _find_gwg(game_goals):#Returns empty df if a tie
         winner, loser = 'away', 'home'
     winner_goals = game_goals[game_goals['ev.team'] == game_goals[winner+'team']]
     gwg = winner_goals[winner_goals[winner+'.score'] + 1 > _max_score(loser)].head(1)
-    #Need to strip off extra gcode layer of MultiIndex
     return gwg
+
+def goalies_wins_losses(events,goalie_index=None):#TODO
+    gwg = game_winning_goals(events)
+    pass    
 
 def goalies_games_started(events,goalie_index=None):
     "Aggregate goalie starts over input events. A list or index of goalies can be input if already calculated; otherwise computed on the fly from events. Returns data frame with columns: (starts,home_starts,away_starts)."
