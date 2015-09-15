@@ -14,17 +14,36 @@ _playoff_gcode_start = 30000
 ###########################
 
 #################### Event Filters ##############################
+
+def filter_by_hometeam(events,team):
+    "Returns events from homes games for `team` (use the standard 3-letter abbreviation for team names.)"
+    return events[events['hometeam']==team]
+
+def filter_by_awayteam(events,team):
+    "Returns events from away games for `team` (use the standard 3-letter abbreviation for team names.)"
+    return events[events['awayteam']==team]
+
+def filter_by_team(events,team):
+    "Returns events from all games for `team` (use the standard 3-letter abbreviation for team names.)"
+    home = filter_by_hometeam(events,team)
+    away = filter_by_awayteam(events,team)
+    return home.append(away).sort(axis=0)
+
+def filter_by_event_team(events,team):
+    "Returns events where event team is `team` (use the standard 3-letter abbreviation for team names.)"
+    return events[events['ev.team']==team]
+
 def remove_shootouts(events):
+    "Removes all shootout events."
     # Shootouts are period 5 of regular season games. 
     return events[(events['period']!=5)
                     | (events['gcode'] > _playoff_gcode_start)]
 
-
 def shootouts(events):
+    "Returns only shootout events."
     # Shootouts are period 5 of regular season games. 
     return events[(events['period'] == 5)
                     & (events['gcode'] <= _playoff_gcode_start)]
-
 
 def even_strength(events):
     #TODO
