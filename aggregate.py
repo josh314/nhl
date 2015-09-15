@@ -104,15 +104,27 @@ def goalies_games_played(events):#TODO
     games = events['gcode'].unique()
     for game in games:
         pass
-    
 
-    
-def goalies_wins_losses(events,goalie_index=None):
+def goalie_record(events,goalie_index=None):
+    "Aggregate goalie win/loss record over input events. Returns data frame with total wins/losses, and home & away win/losses. A win/loss is recorded only if the goalie is on the ice for the game-winning-goal. A list or index of goalies can be input if already calculated; otherwise computed on the fly from events."
+    g = game_winning_goals(events)
+    wins = {t:  g[g['ev.team']==g[t + 'team']] for t in ['home','away']} 
+    goalie_home_wins = wins['home'].groupby('home.G').size()
+    goalie_away_losses = wins['home'].groupby('away.G').size()
+    goalie_away_wins = wins['away'].groupby('away.G').size()
+    goalie_home_losses = wins['away'].groupby('home.G').size()
+    records = {
+        'home_wins': wins['home'].groupby('home.G').size(),
+        'home_losses': wins['away'].groupby('home.G').size(),
+        'away_wins': wins['away'].groupby('away.G').size(),
+        'away_losses': wins['away'].groupby('home.G').size(),
+        }
     index = goalie_index if goalie_index else _goalie_index(events)
-    gwg = game_winning_goals(events)
-    #TODO
-    pass    
-
+    res = pd.DataFrame(index=index, data=records).fillna(0)
+    res.insert(0,'losses', res['home_losses'] +res['away_losses'])
+    res.insert(0,'wins', res['home_wins'] +res['away_wins'])
+    return res
+    
 def goalies_games_started(events,goalie_index=None):
     "Aggregate goalie starts over input events. A list or index of goalies can be input if already calculated; otherwise computed on the fly from events. Returns data frame with columns: (starts,home_starts,away_starts)."
     index = goalie_index if goalie_index else _goalie_index(events)
