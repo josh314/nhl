@@ -57,10 +57,21 @@ def penalty_kill(events):
     #TODO
     return events
 
+def regulation(events):
+    "Return events from regulation time, i.e. periods 1,2,3."
+    return events[events['period'] <= 3]
+
+def overtime(events):
+    "Return events from overtime, excluding shootouts."
+    after_regulation = events[events['period'] > 3]
+    return remove_shootouts(after_regulation)
+
 def regular_season(events):
+    "Return events from regular season games."
     return events[events['gcode'] <= _playoff_gcode_start]
 
 def playoffs(events):
+    "Return events from playoff games."
     return events[events['gcode'] > _playoff_gcode_start]
 
 def game_winning_goals(events):
@@ -82,6 +93,12 @@ def game_winning_goals(events):
     gwg.index=gwg.index.levels[1]#removes the redundant gcode indexing layer
     return gwg
 
+#################################################################
+
+############### Team Aggregation #############################
+
+def team_record(events,team):#TODO
+    pass
 #################################################################
 
 
