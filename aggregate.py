@@ -13,8 +13,64 @@ import numpy as np
 _playoff_gcode_start = 30000
 ###########################
 
+#################### Event Filters ##############################
+def remove_shootouts(events):
+    # Shootouts are period 5 of regular season games. 
+    return events[(events['period']!=5)
+                    | (events['gcode'] > _playoff_gcode_start)]
+
+
+def shootouts(events):
+    # Shootouts are period 5 of regular season games. 
+    return events[(events['period'] == 5)
+                    & (events['gcode'] <= _playoff_gcode_start)]
+
+
+def even_strength(events):
+    #TODO
+    return events
+
+def power_play(events):
+    #TODO
+    return events
+
+def penalty_kill(events):
+    #TODO
+    return events
+
+def regular_season(events):
+    return events[events['gcode'] <= _playoff_gcode_start]
+
+def playoffs(events):
+    return events[events['gcode'] > _playoff_gcode_start]
+
+def game_winning_goals(events):
+    "Returns subset of the input events which represent game winning goals."
+    goals = remove_shootouts(events[events['etype']=='GOAL'])
+    games = goals.groupby('gcode')
+    def _find_gwg(game_goals):#Returns empty df if a tie
+        def _max_score(team):#team = 'home' or 'away'
+            score = game_goals[team+'.score'].max()
+            if(game_goals.tail(1)['ev.team'].values[0]==game_goals[team+'team'].values[0]):
+                score += 1 #score entries don't include the goal just scored
+            return score
+        winner, loser = 'home', 'away'
+        if _max_score('away') > _max_score('home'):
+            winner, loser = 'away', 'home'
+        winner_goals = game_goals[game_goals['ev.team'] == game_goals[winner+'team']]
+        return winner_goals[winner_goals[winner+'.score'] + 1 > _max_score(loser)].head(1)
+    return games.apply(_find_gwg)
+
+#################################################################
+
+
+############### Skaters Aggregation #############################
+
 def skaters_total_scoring(events):#TODO
     pass
+#################################################################
+
+############### Goalies Aggregation #############################
 
 def _goalie_index(events):
     # dropna() removes nan from empty net situations
@@ -22,38 +78,18 @@ def _goalie_index(events):
     goalies = sorted( list( uniq_col('away.G').union(uniq_col('home.G')) ) )
     return pd.Index(goalies)
 
-def remove_shootouts(events):
-    # Shootouts are period 5 of regular season games. 
-    events = events[(events['period']!=5)
-                    | (events['gcode']>_playoff_gcode_start)]
-    return events
 
 def goalies_games_played(events):#TODO
     games = events['gcode'].unique()
     for game in games:
         pass
     
-def game_winning_goals(events):
-    "Returns subset of the input events which represent game winning goals."
-    goals = remove_shootouts(events[events['etype']=='GOAL'])
-    games = goals.groupby('gcode')
-    return games.apply(_find_gwg)
-    
-def _find_gwg(game_goals):#Returns empty df if a tie
-    def _max_score(team):#team = 'home' or 'away'
-        score = game_goals[team+'.score'].max()
-        if(game_goals.tail(1)['ev.team'].values[0]==game_goals[team+'team'].values[0]):
-            score += 1 #score entries don't include the goal just scored
-        return score
-    winner, loser = 'home', 'away'
-    if _max_score('away') > _max_score('home'):
-        winner, loser = 'away', 'home'
-    winner_goals = game_goals[game_goals['ev.team'] == game_goals[winner+'team']]
-    gwg = winner_goals[winner_goals[winner+'.score'] + 1 > _max_score(loser)].head(1)
-    return gwg
 
-def goalies_wins_losses(events,goalie_index=None):#TODO
+    
+def goalies_wins_losses(events,goalie_index=None):
+    index = goalie_index if goalie_index else _goalie_index(events)
     gwg = game_winning_goals(events)
+    #TODO
     pass    
 
 def goalies_games_started(events,goalie_index=None):
@@ -88,8 +124,10 @@ def goalies_aggregation_stats(events):#WIP
     goalies.insert(len(goalies.columns),'saves', saves(events))
     goalies.fillna(0,inplace=True)
     return goalies
-    
-    
+
+##########################################################
+
+######################### Main ###########################
 def _set_io_files():
     infile = sys.argv[1]
     outfile = "out.csv"
