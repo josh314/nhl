@@ -9,9 +9,11 @@ if __name__ == '__main__' and len(sys.argv) < 2:
 import pandas as pd
 import numpy as np
 
-### Magic numbers #########
+### Magic numbers and objects #########
 _playoff_gcode_start = 30000
-###########################
+_home_team_players = ['h1','h2','h3','h4','h5','h6','home.G']
+_away_team_players = ['a1','a2','a3','a4','a5','a6','away.G']
+#######################################
 
 #################### Event Filters ##############################
 
@@ -46,16 +48,31 @@ def shootouts(events):
                     & (events['gcode'] <= _playoff_gcode_start)]
 
 def even_strength(events):
-    #TODO
-    return events
+    "Return even-strength (5v5, 4v4, 3v3) events. "
+    return events[events['home.skaters']==events['away.skaters']]
 
-def power_play(events):
-    #TODO
-    return events
+def five_on_five(events):#goalies count!
+    return events[(events['home.skaters']==6) & (events['away.skaters']==6)]
 
-def penalty_kill(events):
-    #TODO
-    return events
+def four_on_four(events):#goalies count!
+    return events[(events['home.skaters']==5) & (events['away.skaters']==5)]
+
+def man_advantage(events):
+    return events[events['home.skaters']!=events['away.skaters']]
+
+def power_play(events,team):
+    "Returns any power play events for specified team."
+    return events[((events['hometeam']==team)
+                  & (events['home.skaters']>events['away.skaters']))
+                  | ((events['awayteam']==team)
+                  & (events['away.skaters']>events['home.skaters']))]
+
+def penalty_kill(events,team):
+    "Returns any penalty_kill events for specified team."
+    return events[((events['hometeam']==team)
+                  & (events['home.skaters']<events['away.skaters']))
+                  | ((events['awayteam']==team)
+                  & (events['away.skaters']<events['home.skaters']))]
 
 def regulation(events):
     "Return events from regulation time, i.e. periods 1,2,3."
@@ -92,6 +109,9 @@ def game_winning_goals(events):
     gwg = games.apply(_find_gwg)
     gwg.index=gwg.index.levels[1]#removes the redundant gcode indexing layer
     return gwg
+
+
+
 
 #################################################################
 
