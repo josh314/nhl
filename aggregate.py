@@ -122,7 +122,7 @@ def goalies_games_played(events):#TODO
     for game in games:
         pass
 
-def goalie_record(events,goalie_index=None):
+def goalie_records(events,goalie_index=None):
     "Aggregate goalie win/loss record over input events. Returns data frame with total wins/losses, and home & away win/losses. A win/loss is recorded only if the goalie is on the ice for the game-winning-goal. A list or index of goalies can be input if already calculated; otherwise computed on the fly from events."
     g = game_winning_goals(events)
     wins = {t:  g[g['ev.team']==g[t + 'team']] for t in ['home','away']} 
@@ -136,7 +136,7 @@ def goalie_record(events,goalie_index=None):
         'away_wins': wins['away'].groupby('away.G').size(),
         'away_losses': wins['away'].groupby('home.G').size(),
         }
-    index = goalie_index if goalie_index else _goalie_index(events)
+    index = goalie_index if goalie_index is not None else _goalie_index(events)
     res = pd.DataFrame(index=index, data=records).fillna(0)
     res.insert(0,'losses', res['home_losses'] +res['away_losses'])
     res.insert(0,'wins', res['home_wins'] +res['away_wins'])
@@ -144,7 +144,7 @@ def goalie_record(events,goalie_index=None):
     
 def goalies_games_started(events,goalie_index=None):
     "Aggregate goalie starts over input events. A list or index of goalies can be input if already calculated; otherwise computed on the fly from events. Returns data frame with columns: (starts,home_starts,away_starts)."
-    index = goalie_index if goalie_index else _goalie_index(events)
+    index = goalie_index if goalie_index is not None else _goalie_index(events)
     res = pd.DataFrame(index=index)
     games = events.groupby('gcode').head(1)
     res.insert(len(res.columns),'home_starts',games['home.G'].value_counts())
@@ -167,12 +167,14 @@ def saves(events):
     goalie[saved_shots['ev.team']==saved_shots['hometeam']] = saved_shots['away.G']
     return goalie.dropna().value_counts().sort_index()
 
-def goalies_aggregation_stats(events):#WIP
+def goalies_stats(events):#WIP
     "Individual goalie data aggregated over the input events"
     goalies = pd.DataFrame(index=_goalie_index(events))
     goalies.insert(len(goalies.columns),'goals_against',goals_against(events))
     goalies.insert(len(goalies.columns),'saves', saves(events))
+    goalies = goalies.join(goalie_records(events,goalies.index))
     goalies.fillna(0,inplace=True)
+    goalies.insert(len(goalies.columns), 'save %', goalies['saves']/(goalies['saves']+goalies['goals_against']))
     return goalies
 
 ##########################################################
