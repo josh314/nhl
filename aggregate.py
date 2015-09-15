@@ -59,7 +59,9 @@ def game_winning_goals(events):
             winner, loser = 'away', 'home'
         winner_goals = game_goals[game_goals['ev.team'] == game_goals[winner+'team']]
         return winner_goals[winner_goals[winner+'.score'] + 1 > _max_score(loser)].head(1)
-    return games.apply(_find_gwg)
+    gwg = games.apply(_find_gwg)
+    gwg.index=gwg.index.levels[1]#removes the redundant gcode indexing layer
+    return gwg
 
 #################################################################
 
