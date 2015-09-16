@@ -91,6 +91,9 @@ def playoffs(events):
     "Return events from playoff games."
     return events[events['gcode'] > _playoff_gcode_start]
 
+def goals(events):
+    return events[events['etype']=='GOAL']
+
 def game_winning_goals(events):
     "Returns subset of the input events which represent game winning goals."
     goals = remove_shootouts(events[events['etype']=='GOAL'])
@@ -109,9 +112,6 @@ def game_winning_goals(events):
     gwg = games.apply(_find_gwg)
     gwg.index=gwg.index.levels[1]#removes the redundant gcode indexing layer
     return gwg
-
-
-
 
 #################################################################
 
@@ -146,20 +146,16 @@ def goalie_records(events,goalie_index=None):
     "Aggregate goalie win/loss record over input events. Returns data frame with total wins/losses, and home & away win/losses. A win/loss is recorded only if the goalie is on the ice for the game-winning-goal. A list or index of goalies can be input if already calculated; otherwise computed on the fly from events."
     g = game_winning_goals(events)
     wins = {t:  g[g['ev.team']==g[t + 'team']] for t in ['home','away']} 
-    goalie_home_wins = wins['home'].groupby('home.G').size()
-    goalie_away_losses = wins['home'].groupby('away.G').size()
-    goalie_away_wins = wins['away'].groupby('away.G').size()
-    goalie_home_losses = wins['away'].groupby('home.G').size()
     records = {
         'home_wins': wins['home'].groupby('home.G').size(),
         'home_losses': wins['away'].groupby('home.G').size(),
         'away_wins': wins['away'].groupby('away.G').size(),
-        'away_losses': wins['away'].groupby('home.G').size(),
+        'away_losses': wins['home'].groupby('away.G').size(),
         }
     index = goalie_index if goalie_index is not None else _goalie_index(events)
     res = pd.DataFrame(index=index, data=records).fillna(0)
-    res.insert(0,'losses', res['home_losses'] +res['away_losses'])
-    res.insert(0,'wins', res['home_wins'] +res['away_wins'])
+    res.insert(0,'losses', res['home_losses'] + res['away_losses'])
+    res.insert(0,'wins', res['home_wins'] + res['away_wins'])
     return res
     
 def goalies_games_started(events,goalie_index=None):
@@ -194,7 +190,8 @@ def goalies_stats(events):#WIP
     goalies.insert(len(goalies.columns),'saves', saves(events))
     goalies = goalies.join(goalie_records(events,goalies.index))
     goalies.fillna(0,inplace=True)
-    goalies.insert(len(goalies.columns), 'save %', goalies['saves']/(goalies['saves']+goalies['goals_against']))
+    goalies.insert(len(goalies.columns), 'shots_against', (goalies['saves']+goalies['goals_against']))
+    goalies.insert(len(goalies.columns), 'save%', goalies['saves']/(goalies['saves']+goalies['goals_against']))
     return goalies
 
 ##########################################################
