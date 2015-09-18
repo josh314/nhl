@@ -2,6 +2,12 @@
 Constants for use in this package
 """
 
+################### Player id ################################
+
+# A placeholder value indicating no player, e.g. to indicate
+# pulled goalie
+NOPLAYER = 'xxxxxxxNA'
+
 ########################### GCODE ##############################
 
 # Each game of a season is assigned a unique 'gcode' number. The
