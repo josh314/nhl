@@ -7,23 +7,52 @@ import nhl.constants as const
 
 ############### By team ######################################
 
-def by_hometeam(events,team):
+def by_home_team(events,team):
     "Returns events from homes games for `team` (use the standard 3-letter abbreviation for team names.)"
     return events[events['hometeam']==team]
 
-def by_awayteam(events,team):
+def by_away_team(events,team):
     "Returns events from away games for `team` (use the standard 3-letter abbreviation for team names.)"
     return events[events['awayteam']==team]
 
 def by_team(events,team):
     "Returns events from all games for `team` (use the standard 3-letter abbreviation for team names.)"
-    home = by_hometeam(events,team)
-    away = by_awayteam(events,team)
+    home = by_home_team(events,team)
+    away = by_away_team(events,team)
     return home.append(away).sort(axis=0)
 
 def by_event_team(events,team):
     "Returns events where event team is `team` (use the standard 3-letter abbreviation for team names.)"
     return events[events['ev.team']==team]
+
+############### By players ######################################
+
+def by_goalie(events,goalie):
+    return events[(events['home.G']==goalie) | (events['away.G']==goalie)]
+
+def by_home_goalie(events,goalie):
+    return events[(events['home.G']==goalie)]
+
+def by_away_goalie(events,goalie):
+    return events[(events['away.G']==goalie)]
+
+def by_skater(events,player):
+    bool_vec = pd.Series(False,index=np.arange(len(events)))
+    for position in (const.HOME_SKATERS + const.AWAY_SKATERS):
+        bool_vec |= (events[position]==player)
+    return events[bool_vec]
+
+def by_home_skater(events,player):
+    bool_vec = pd.Series(False,index=np.arange(len(events)))
+    for position in const.HOME_SKATERS:
+        bool_vec |= (events[position]==player)
+    return events[bool_vec]
+
+def by_away_skater(events,player):
+    bool_vec = pd.Series(False,index=np.arange(len(events)))
+    for position in const.AWAY_SKATERS:
+        bool_vec |= (events[position]==player)
+    return events[bool_vec]
 
 ################### Regulation/OT/Shootout ###############################
 
@@ -93,8 +122,15 @@ def playoffs(events):
 def goals(events):
     return events[events['etype']=='GOAL']
 
+def shots(events):
+    return events[(events['etype']=='SHOT') | (events['etype']=='GOAL')]
+
+def shot_attempts(events):
+        return events[(events['etype']=='SHOT') | (events['etype']=='GOAL')
+                      | (events['etype']=='MISS') | (events['etype']=='BLOCK')]
+
 def game_winning_goals(events):
-    "Returns subset of the input events which represent game winning goals."
+    "Returns subset of the input events which represent game winning goals. Note that the input must include all non-shootout goals in a game for the output to be reliable."
     goals = remove_shootouts(events[events['etype']=='GOAL'])
     games = goals.groupby('gcode')
     def _find_gwg(game_goals):#Returns empty df if a tie
@@ -114,7 +150,13 @@ def game_winning_goals(events):
 
 #################### Defensive events ##############################
 
+def blocked_shots(events):
+    return events[events['etype']=='BLOCK']
+
 #################### Goalie events ###################################
+
+def saves(events):
+    return events[events['etype']=='SHOT']
 
 #################### Other events ###################################
 

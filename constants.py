@@ -21,9 +21,9 @@ PLAYOFFS_START = 30000
 # columns in each array will be NaN for every event because of this.
 
 
-HOME_TEAM_PLAYERS = ['h1','h2','h3','h4','h5','h6','home.G']
-AWAY_TEAM_PLAYERS = ['a1','a2','a3','a4','a5','a6','away.G']
+HOME_PLAYERS = ['h1','h2','h3','h4','h5','h6','home.G']
+AWAY_PLAYERS = ['a1','a2','a3','a4','a5','a6','away.G']
 
 # Same as above but without the goalies. 
-HOME_TEAM_SKATERS = ['h1','h2','h3','h4','h5','h6']
-AWAY_TEAM_SKATERS = ['h1','h2','h3','h4','h5','h6']
+HOME_SKATERS = ['h1','h2','h3','h4','h5','h6']
+AWAY_SKATERS = ['a1','a2','a3','a4','a5','a6']

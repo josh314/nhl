@@ -10,9 +10,9 @@ import nhl.constants as const
 
 def team_record(events,team,filter_fn=None):#TODO
     if(filter_fn == 'home'):
-        filter_fn = evfilter.by_hometeam
+        filter_fn = evfilter.by_home_team
     elif(filter_fn == 'away'):
-        filter_fn = evfilter.by_awayteam
+        filter_fn = evfilter.by_away_team
     else:
         filter_fn = evfilter.by_team
     ev = filter_fn(events,team)
@@ -77,19 +77,22 @@ def goals_against(events):
 
 def saves(events):
     "Aggregate saves for individual goalies over the input set of events. Returns a series indexed by goalie text_id."
-    saved_shots = events[events['etype']=='SHOT']
+    saved_shots = evfilter.saves(events)
     goalie = pd.Series(data=saved_shots['home.G'],index=saved_shots.index)
     goalie[saved_shots['ev.team']==saved_shots['hometeam']] = saved_shots['away.G']
     return goalie.dropna().value_counts().sort_index()
 
 def goalies_stats(events):#WIP
     "Individual goalie data aggregated over the input events"
-    goalies = pd.DataFrame(index=_goalie_index(events))
-    goalies.insert(len(goalies.columns),'goals_against',goals_against(events))
-    goalies.insert(len(goalies.columns),'saves', saves(events))
-    goalies = goalies.join(goalie_records(events,goalies.index))
-    goalies.fillna(0,inplace=True)
-    goalies.insert(len(goalies.columns), 'shots_against', (goalies['saves']+goalies['goals_against']))
-    goalies.insert(len(goalies.columns), 'save%', goalies['saves']/(goalies['saves']+goalies['goals_against']))
-    return goalies
+    stats = pd.DataFrame(index=_goalie_index(events))
+    stats.insert(len(stats.columns),'goals_against',goals_against(events))
+    stats.insert(len(stats.columns),'saves', saves(events))
+    stats = stats.join(goalie_records(events,stats.index))
+    stats.fillna(0,inplace=True)
+    stats.insert(len(stats.columns), 'shots_against', (stats['saves']+stats['goals_against']))
+    stats.insert(len(stats.columns), 'save%', stats['saves']/(stats['saves']+stats['goals_against']))
+    return stats
 
+def goalie_stats(events,player):#WIP
+    stats = None
+    return stats
