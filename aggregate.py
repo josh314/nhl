@@ -23,6 +23,17 @@ def team_record(events,team,filter_fn=None):#TODO
 
 ############### Skaters Aggregation #############################
 
+def players_goals(events):
+    goals = evfilter.goals(events)
+    players_goals = goals.groupby('ev.player.1').size()
+    players_goals.index.name = 'player'
+    return players_goals
+
+def players_assists(events):
+    goals = evfilter.goals(events)
+    players_assists = pd.melt(goals[['ev.player.2','ev.player.3']]).dropna().groupby('value').size()
+    return players_assists
+    
 def skaters_total_scoring(events):#TODO
     pass
 #################################################################
