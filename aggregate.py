@@ -32,7 +32,15 @@ def players_goals(events):
 def players_assists(events):
     goals = evfilter.goals(events)
     players_assists = pd.melt(goals[['ev.player.2','ev.player.3']]).dropna().groupby('value').size()
+    players_assists.index.name = 'player'
     return players_assists
+
+def players_points(events):
+    goals = players_goals(events)
+    assists = players_assists(events)
+    players_points = goals.add(assists, fill_value=0)
+    players_points.index.name = 'player'
+    return players_points
     
 def skaters_total_scoring(events):#TODO
     pass
