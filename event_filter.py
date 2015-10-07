@@ -5,6 +5,12 @@ import pandas as pd
 import numpy as np
 import nhl.constants as const
 
+############### By time period ###############################
+
+def by_season(events, season):
+    "Returns events from a given season. Season codes take the form '20142015'."
+    return events[events['season']==season]
+
 ############### By team ######################################
 
 def by_home_team(events,team):
@@ -54,8 +60,11 @@ def by_away_skater(events,player):
         bool_vec |= (events[position]==player)
     return events[bool_vec]
 
-################### Regulation/OT/Shootout ###############################
+################### Period/Regulation/OT/Shootout ###########################
 
+def period(events,period):
+    "Return events from a given period of play."
+    return events[events['period'] == period]
 
 def regulation(events):
     "Return events from regulation time, i.e. periods 1,2,3."
@@ -68,7 +77,7 @@ def overtime(events):
 
 def shootouts(events):
     "Returns only shootout events."
-    # Shootouts are period 5 of regular season games. 
+    # Shootouts are period 5 of regular season games.
     return events[(events['period'] == 5)
                     & (events['gcode'] <= const.PLAYOFFS_START)]
 
